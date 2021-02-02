@@ -31,10 +31,10 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
     @Override
     public void onBindViewHolder(PostViewHolder holder, int position) {
-        holder.title.setText(mData.mPosts.get(position).title);
-        holder.body.setText(mData.mPosts.get(position).body);
-        int index = new Random().nextInt(mData.mPhotos.size() - 1);
-        String imageUrl = mData.mPhotos.get(index).thumbnailUrl;
+        holder.title.setText(mData.getMPosts().get(position).getTitle());
+        holder.body.setText(mData.getMPosts().get(position).getBody());
+        int index = new Random().nextInt(mData.getMPhotos().size() - 1);
+        String imageUrl = mData.getMPhotos().get(index).getThumbnailUrl();
         mRequestManager.load(imageUrl).into(holder.image);
         holder.body.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -51,7 +51,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
     @Override
     public int getItemCount() {
-        return mData == null ? 0 : mData.mPosts.size();
+        return mData == null ? 0 : mData.getMPosts().size();
     }
 
     public class PostViewHolder extends RecyclerView.ViewHolder {
