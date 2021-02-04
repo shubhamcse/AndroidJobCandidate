@@ -1,12 +1,13 @@
-package app.storytel.candidate.com
+package app.storytel.candidate.com.postdetails
 
 import android.os.Bundle
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import app.storytel.candidate.com.R
 
-class DetailsActivity : AppCompatActivity() {
+class PostDetailsActivity : AppCompatActivity() {
 
     private var mImageView: ImageView? = null
     private var mTextView: TextView? = null
