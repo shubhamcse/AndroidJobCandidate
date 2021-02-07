@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/relative_error_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorWhite"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        >
+
+    <ImageView
+            android:id="@+id/image_view_error"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_centerInParent="true"
+            android:layout_marginBottom="20dp"
+            android:src="@drawable/ic_error"
+            />
+
+    <TextView
+            android:id="@+id/text_view_error_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/image_view_error"
+            android:text="@string/error_message_generic"
+            android:layout_centerHorizontal="true"
+            android:textSize="20dp"
+            />
+
+    <Button
+            android:id="@+id/button_retry"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:background="@color/colorAccent"
+            android:text="RETRY"
+            android:textColor="@color/colorWhite"
+            android:layout_below="@id/text_view_error_message"
+            android:layout_centerHorizontal="true"
+            />
+</RelativeLayout>
