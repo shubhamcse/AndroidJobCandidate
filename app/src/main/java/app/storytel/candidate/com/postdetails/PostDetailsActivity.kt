@@ -48,7 +48,7 @@ class PostDetailsActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val extras = intent.extras
-        
+
         val postID = extras?.getInt(EXTRAS_POST_ID)
         val postBody = extras?.getString(EXTRAS_POST_BODY)
         val postTitle = extras?.getString(EXTRAS_POST_TITLE)
