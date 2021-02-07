@@ -6,15 +6,12 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Button
-import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import app.storytel.candidate.com.R
+import app.storytel.candidate.com.databinding.ActivityScrollingBinding
 import app.storytel.candidate.com.postdetails.PostDetailsActivity
 import app.storytel.candidate.com.utils.ApiClient
 import app.storytel.candidate.com.utils.Resource
@@ -23,9 +20,9 @@ import app.storytel.candidate.com.utils.ViewModelFactory
 
 class PostsActivity : AppCompatActivity() {
 
-    private val TAG = "PostsActivity"
-
-    var mRecyclerView: RecyclerView? = null
+    companion object {
+        private val TAG = "PostsActivity"
+    }
 
     private val postsViewModel: PostsViewModel by lazy {
         ViewModelProviders.of(
@@ -34,37 +31,44 @@ class PostsActivity : AppCompatActivity() {
         ).get(PostsViewModel::class.java)
     }
 
+    private val binding: ActivityScrollingBinding by lazy { ActivityScrollingBinding.inflate(layoutInflater) }
+
     private val mPostAdapter: PostAdapter by lazy {
         PostAdapter(onItemClicked = { post, photo ->
             val intent = Intent(this, PostDetailsActivity::class.java)
-            intent.putExtra("postId", post.id)
+            intent.apply {
+                putExtra(PostDetailsActivity.EXTRAS_POST_ID, post.id)
+                putExtra(PostDetailsActivity.EXTRAS_POST_BODY, post.body)
+                putExtra(PostDetailsActivity.EXTRAS_POST_TITLE, post.title)
+                putExtra(PostDetailsActivity.EXTRAS_POST_PHOTO_URL, photo.url)
+            }
             startActivity(intent)
         })
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_scrolling)
+        setContentView(binding.root)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
 
         setRecyclerView()
-        val progressBar: ProgressBar = findViewById(R.id.indeterminateBar)
-        val retryLayout: ConstraintLayout = findViewById(R.id.layout_error)
-        val retryButton: Button = findViewById(R.id.button_retry)
-        retryButton.setOnClickListener { postsViewModel.retryGettingPostsAndPhotos() }
+
+        binding.layoutError.buttonRetry
+                .setOnClickListener { postsViewModel.retryGettingPostsAndPhotos() }
 
         postsViewModel.getPostsAndPhotos().observe(this, {
             it?.let { result ->
                 when (result.status) {
                     Status.LOADING -> {
-                        showLoadingView(progressBar, retryLayout)
+                        showLoadingView()
                     }
                     Status.SUCCESS -> {
-                        setDataOnRecyclerView(progressBar, retryLayout, result)
+                        setDataOnRecyclerView(result)
                     }
                     Status.ERROR -> {
-                        showErrorView(progressBar, retryLayout, it)
+                        showErrorView()
+                        Log.d(TAG, "error occurred while fetching with message:" + it.message)
                     }
                 }
 
@@ -74,34 +78,40 @@ class PostsActivity : AppCompatActivity() {
 
 
     private fun setRecyclerView() {
-        mRecyclerView = findViewById(R.id.recycler_view)
         val manager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        mRecyclerView?.layoutManager = manager
-        mRecyclerView?.adapter = mPostAdapter
+        with(binding) {
+            scrollingContent.recyclerView.layoutManager = manager
+            scrollingContent.recyclerView.adapter = mPostAdapter
+        }
     }
 
-    private fun showLoadingView(progressBar: ProgressBar,
-                                retryLayout: ConstraintLayout) {
-        progressBar.visibility = View.VISIBLE
-        mRecyclerView?.visibility = View.GONE
-        retryLayout.visibility = View.GONE
+    private fun showLoadingView() {
+        with(binding) {
+            scrollingContent.indeterminateBar.visibility = View.VISIBLE
+            appBar.visibility = View.VISIBLE
+            scrollingContent.recyclerView.visibility = View.GONE
+            layoutError.relativeErrorLayout.visibility = View.GONE
+        }
     }
 
-    private fun setDataOnRecyclerView(progressBar: ProgressBar,
-                                      retryLayout: ConstraintLayout,
-                                      result: Resource<PostAndImages>) {
-        progressBar.visibility = View.GONE
-        mRecyclerView?.visibility = View.VISIBLE
-        retryLayout.visibility = View.GONE
-        result.data?.let { postsAndImages -> mPostAdapter.setData(postsAndImages) }
+    private fun setDataOnRecyclerView(result: Resource<PostAndImages>) {
+        with(binding) {
+            scrollingContent.indeterminateBar.visibility = View.GONE
+            appBar.visibility = View.VISIBLE
+            scrollingContent.recyclerView.visibility = View.VISIBLE
+            layoutError.relativeErrorLayout.visibility = View.GONE
+        }
+            result.data?.let { postsAndImages -> mPostAdapter.setData(postsAndImages) }
+
     }
 
-    private fun showErrorView(progressBar: ProgressBar,
-                              retryLayout: ConstraintLayout,
-                              it: Resource<PostAndImages>) {
-        progressBar.visibility = View.GONE
-        retryLayout.visibility = View.VISIBLE
-        Log.d(TAG, "error occurred while fetching with message:" + it.message)
+    private fun showErrorView() {
+        with(binding) {
+            appBar.visibility = View.GONE
+            scrollingContent.indeterminateBar.visibility = View.GONE
+            scrollingContent.recyclerView.visibility = View.GONE
+            layoutError.relativeErrorLayout.visibility = View.VISIBLE
+        }
     }
 
 

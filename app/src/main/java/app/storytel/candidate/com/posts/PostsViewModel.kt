@@ -13,7 +13,9 @@ import java.io.IOException
 
 class PostsViewModel(private val apiService: ApiService) : ViewModel() {
 
-    private fun getPosts() {
+    private val postsAndImages = MutableLiveData<Resource<PostAndImages>>()
+
+    private fun fetchPostsAndPhotos() {
         viewModelScope.launch(Dispatchers.IO) {
             postsAndImages.postValue(Resource(Status.LOADING, null, null))
             val postsResult = fetchPostsFromAPI()
@@ -32,7 +34,7 @@ class PostsViewModel(private val apiService: ApiService) : ViewModel() {
                         Status.ERROR -> {
                             postsAndImages.postValue(Resource(Status.ERROR, null, photosResult.message))
                         }
-                        Status.LOADING -> {
+                       else -> {
                             postsAndImages.postValue(Resource(Status.LOADING, null, photosResult.message))
                         }
                     }
@@ -57,33 +59,34 @@ class PostsViewModel(private val apiService: ApiService) : ViewModel() {
                 Resource.error(response.body(), response.message())
             }
         } catch (e: IOException) {
-            Resource.error(null, e.localizedMessage)
+            Resource.error(null, e.message ?: "")
         }
 
     }
+
 
     private fun fetchPhotosFromAPI(): Resource<List<Photo>?> {
-        val response = apiService.getPhotos().execute()
-        return if (response.isSuccessful) {
-            Resource.success(response.body())
-        } else {
-            Resource.error(response.body(), response.message())
+        return try {
+            val response = apiService.getPhotos().execute()
+            if (response.isSuccessful) {
+                Resource.success(response.body())
+            } else {
+                Resource.error(response.body(), response.message())
+            }
+        } catch (e: IOException) {
+            Resource.error(null, e.message ?: "")
         }
-    }
-
-    private val postsAndImages = MutableLiveData<Resource<PostAndImages>>().apply {
-        this.value = Resource(Status.LOADING, null, null)
     }
 
     fun getPostsAndPhotos(): LiveData<Resource<PostAndImages>> {
         postsAndImages.value?.data ?: run {
-            getPosts()
+            fetchPostsAndPhotos()
         }
         return postsAndImages
     }
 
-    fun retryGettingPostsAndPhotos(){
-        getPosts()
+    fun retryGettingPostsAndPhotos() {
+        fetchPostsAndPhotos()
     }
 }
 
