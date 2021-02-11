@@ -1,5 +1,6 @@
 package app.storytel.candidate.com.posts
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -15,10 +16,15 @@ class PostsViewModel(private val apiService: ApiService) : ViewModel() {
 
     private val postsAndImages = MutableLiveData<Resource<PostAndImages>>()
 
+    init {
+        fetchPostsAndPhotos()
+    }
+
     private fun fetchPostsAndPhotos() {
         viewModelScope.launch(Dispatchers.IO) {
             postsAndImages.postValue(Resource(Status.LOADING, null, null))
             val postsResult = fetchPostsFromAPI()
+            Log.i("VM", "post fetched "+postsResult.hashCode())
             when (postsResult.status) {
                 Status.SUCCESS -> {
                     val photosResult = fetchPhotosFromAPI()
@@ -52,7 +58,9 @@ class PostsViewModel(private val apiService: ApiService) : ViewModel() {
 
     private fun fetchPostsFromAPI(): Resource<List<Post>?> {
         return try {
+            Log.i("VM", "post fetching ")
             val response = apiService.getPosts().execute()
+            Log.i("VM", "post fetching 1")
             if (response.isSuccessful) {
                 Resource.success(response.body())
             } else {
@@ -79,9 +87,10 @@ class PostsViewModel(private val apiService: ApiService) : ViewModel() {
     }
 
     fun getPostsAndPhotos(): LiveData<Resource<PostAndImages>> {
-        postsAndImages.value?.data ?: run {
-            fetchPostsAndPhotos()
-        }
+
+      /*  postsAndImages.value?.data ?: run {
+
+        }*/
         return postsAndImages
     }
 

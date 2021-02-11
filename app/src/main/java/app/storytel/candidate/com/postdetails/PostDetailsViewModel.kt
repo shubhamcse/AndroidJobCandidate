@@ -13,9 +13,13 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class PostDetailsViewModel(private val apiService: ApiService) : ViewModel() {
+class PostDetailsViewModel(private val apiService: ApiService, private val postID: Int?) : ViewModel() {
 
     private val comments = MutableLiveData<Resource<List<Comment>>>()
+
+    init {
+        checkPostIDAndFetchComments(postID)
+    }
 
     private fun fetchCommentsFromAPI(postID: Int) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -46,15 +50,11 @@ class PostDetailsViewModel(private val apiService: ApiService) : ViewModel() {
         }
     }
 
-    fun getComments(postID: Int?): LiveData<Resource<List<Comment>>> {
-        comments.value?.data ?: run {
-            checkPostIDAndFetchComments(postID)
-        }
+    fun getComments(): LiveData<Resource<List<Comment>>> {
         return comments
     }
-
-
-    fun retryGettingComments(postID: Int?) {
+    
+    fun retryGettingComments() {
         checkPostIDAndFetchComments(postID)
     }
 }
