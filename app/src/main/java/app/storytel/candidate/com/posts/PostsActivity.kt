@@ -16,7 +16,6 @@ import app.storytel.candidate.com.postdetails.PostDetailsActivity
 import app.storytel.candidate.com.utils.ApiClient
 import app.storytel.candidate.com.utils.Resource
 import app.storytel.candidate.com.utils.Status
-import app.storytel.candidate.com.utils.ViewModelFactory
 
 class PostsActivity : AppCompatActivity() {
 
@@ -27,7 +26,7 @@ class PostsActivity : AppCompatActivity() {
     private val postsViewModel: PostsViewModel by lazy {
         ViewModelProviders.of(
                 this,
-                ViewModelFactory(ApiClient.apiService)
+                PostsViewModelFactory(ApiClient.apiService)
         ).get(PostsViewModel::class.java)
     }
 

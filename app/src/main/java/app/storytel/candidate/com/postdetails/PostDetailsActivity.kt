@@ -3,10 +3,7 @@ package app.storytel.candidate.com.postdetails
 import android.os.Bundle
 import android.view.View
 import android.widget.*
-import androidx.annotation.NonNull
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -15,9 +12,8 @@ import app.storytel.candidate.com.databinding.ActivityDetailsBinding
 import app.storytel.candidate.com.utils.ApiClient
 import app.storytel.candidate.com.utils.Resource
 import app.storytel.candidate.com.utils.Status
-import app.storytel.candidate.com.utils.ViewModelFactory
+import app.storytel.candidate.com.posts.PostsViewModelFactory
 import com.bumptech.glide.Glide
-import com.google.android.material.appbar.AppBarLayout
 import kotlin.math.min
 
 class PostDetailsActivity : AppCompatActivity() {
@@ -33,14 +29,6 @@ class PostDetailsActivity : AppCompatActivity() {
     private val postDetailsAdapter by lazy { PostDetailsAdapter() }
     private val mRecyclerView: RecyclerView by lazy { findViewById(R.id.recycler_view) }
     private val binding:ActivityDetailsBinding by lazy { ActivityDetailsBinding.inflate(layoutInflater) }
-    private val layoutErrorRetry by lazy { findViewById<RelativeLayout>(R.id.layout_error) }
-
-    private val postsDetailsViewModel: PostDetailsViewModel by lazy {
-        ViewModelProviders.of(
-                this,
-                ViewModelFactory(ApiClient.apiService)
-        ).get(PostDetailsViewModel::class.java)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,6 +42,12 @@ class PostDetailsActivity : AppCompatActivity() {
         val postTitle = extras?.getString(EXTRAS_POST_TITLE)
         val postPhotoURL = extras?.getString(EXTRAS_POST_PHOTO_URL)
 
+        val postsDetailsViewModel = ViewModelProviders.of(
+                    this,
+                    PostDetailsViewModelFactory(ApiClient.apiService, postID)
+            ).get(PostDetailsViewModel::class.java)
+
+
         setToolbar(binding, postTitle)
 
         binding.details.text = postBody
@@ -62,11 +56,11 @@ class PostDetailsActivity : AppCompatActivity() {
 
         setRecyclerView()
 
-        getComments(postID)
+        getComments(postsDetailsViewModel)
 
         val retry = findViewById<Button>(R.id.button_retry)
         retry.setOnClickListener {
-            postsDetailsViewModel.retryGettingComments(postID)
+            postsDetailsViewModel.retryGettingComments()
         }
     }
 
@@ -86,8 +80,8 @@ class PostDetailsActivity : AppCompatActivity() {
                 .into(binding.backdrop)
     }
 
-    private fun getComments(postID: Int?) {
-        postsDetailsViewModel.getComments(postID).observe(this, {
+    private fun getComments(postsDetailsViewModel: PostDetailsViewModel?) {
+        postsDetailsViewModel?.getComments()?.observe(this, {
             it?.let { result ->
                 when (result.status) {
                     Status.LOADING -> {
